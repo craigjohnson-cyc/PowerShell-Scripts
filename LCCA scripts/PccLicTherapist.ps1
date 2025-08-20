@@ -1,0 +1,56 @@
+﻿#Move Registered Physical Therapist, Registered Occupational Therapist and Registered Speech Therapist to this new group.  
+#They are currently in the PCC_Rehab group.  Remove PCC_Rehab and add PCC_Lic_Therapist.  
+
+function CreatePersonObject()
+{
+    param ($SamAccountName, $fname, $lname, $title, $office)
+    
+    $perObj = New-Object PSObject
+    $perObj | Add-Member -type NoteProperty -Name FirstName -Value $fname
+    $perObj | Add-Member -type NoteProperty -Name LastName -Value $lname
+    $perObj | add-member -type NoteProperty -Name UserId -Value $SamAccountName
+    $perObj | add-member -type NoteProperty -Name JobTitle -Value $title
+    $perObj | add-member -type NoteProperty -Name FacilityName -Value $office
+
+    return $perObj
+}
+
+$licTherapist = @()
+$users = @()
+$u = Get-ADGroupMember -identity "PCC_Rehab" -Recursive | Get-ADUser -Property displayname, memberof, title, office | Select  Name, surname, givenname, SamAccountName, title, office, memberof
+$users += $u
+
+#$users
+#$users | measure
+
+foreach($user in $users)
+{
+    #Registered Physical Therapist, Registered Occupational Therapist and Registered Speech Therapist
+    if ($user.title -eq 'Registered Physical Therapist')
+    {
+        $personObj = CreatePersonObject $user.SamAccountName $user.givenname $user.surname $user.Title $user.office
+        $licTherapist += $personObj
+    }
+    if ($user.title -eq 'Registered Occupational Therapist')
+    {
+        $personObj = CreatePersonObject $user.SamAccountName $user.givenname $user.surname $user.Title $user.office
+        $licTherapist += $personObj
+    }
+    if ($user.title -eq 'Registered Speech Therapist')
+    {
+        $personObj = CreatePersonObject $user.SamAccountName $user.givenname $user.surname $user.Title $user.office
+        $licTherapist += $personObj
+    }
+}
+
+$licTherapist | export-csv -Path "C:\ps\PCC_LicTherapist.csv"
+
+#foreach($user in $licTherapist)
+#{
+    # Remove users from PCC_Rehab group
+    #Remove-ADGroupMember -Identity PCC_Rehab -Members $user.UserId
+    Remove-ADGroupMember -Identity PCC_Rehab -Members $licTherapist.UserId
+    # Add users to Pcc_Lic_Therapist group
+    #Add-ADGroupMember -Identity PCC_Lic_Therapist -Members $user.UserId
+    Add-ADGroupMember -Identity PCC_Lic_Therapist -Members $licTherapist.UserId
+#}

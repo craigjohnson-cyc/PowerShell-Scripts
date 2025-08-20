@@ -1,0 +1,13 @@
+#TYPE System.Management.Automation.PSCustomObject
+"Facility","Name","UserId"
+"Auburn (MA)","Lisa E. Plasse","LEP0001"
+"Auburn (MA)","Christine M. Akerson","CMA0002"
+"East Ridge","Georgann Perry North Glendale","gperry0150"
+"Hallmark Nursing Center (CO)","Benjamin A. Johns","bajohnslcdev"
+"Hallmark Nursing Center (CO)","Mia Mandich","MM0007"
+"Hallmark Nursing Center (CO)","Martha Ceresko","MC0015"
+"North Glendale","Maryann J. Durell-Landerie","MJD0003"
+"North Glendale","Annemarie L. Marshall","ALM0002"
+"North Glendale","Shana E. Anderson","SEA0003"
+"North Glendale","Maryann Villalobos","MV0004"
+"Orange Park","Melanie B. Lacsamana","MBL0001"

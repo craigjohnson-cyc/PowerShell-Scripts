@@ -1,0 +1,38 @@
+﻿Function Main
+{
+    # This script will:
+    # •	Identifiy AD user with a description of Registered Dietician
+    # •	Remove those users from the group PCC_Dietary
+    # •	Add those users to the group PCC_LC_Dietician
+
+    $users = Get-ADUser -Filter {(Description -like  "*Registered Dietician*")} | Get-ADUser -Property DisplayName, Company, title, PhysicalDeliveryOfficeName, Description, enabled | Select surname, givenname, SamAccountName, Company, title, PhysicalDeliveryOfficeName, Description, enabled
+    $processedUsers = @()
+
+    foreach($user in $users)
+    {
+        #Skip Students
+        if($user.Description.ToLower() -like "*student*")
+        {
+            continue
+        }
+        #Skip inactive accounts
+        if(!$user.enabled)
+        {
+            continue
+        }
+        #remove user from PCC_Dietary
+        Remove-ADGroupMember -Identity PCC_Dietary -Members $user.samAccountName -Confirm:$false
+
+        #Add user to PCC_LC_Dietician
+        Add-ADGroupMember -Identity PCC_LC_Dietician -Members $user.samAccountName
+        $processedUsers += $user
+    }
+
+    #Write Log File
+    $fileName = "c:\ps\output\UpdateGroups_PCC_Dietary.csv"
+    $processedUsers | export-csv -Path $fileName -NoTypeInformation
+}
+
+
+#Script begins here - Perform function Main
+Main

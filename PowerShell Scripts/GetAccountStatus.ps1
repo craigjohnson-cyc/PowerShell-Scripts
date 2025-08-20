@@ -1,0 +1,51 @@
+﻿Import-Module ActiveDirectory
+#  Get a list of users from SQL that are Disabled.
+#  Then check the status of the AD accounts
+
+Function Invoke-SQL {
+    param(
+        [string] $dataSource = $(throw "Please specify a server"),
+        [string] $database = $(throw "Please secify a database"),
+        [string] $sqlCommand = $(throw "Please specify a query.")
+    )
+    $connectionString = "Data Source=$dataSource; Integrated Security=SSPI; Initial Catalog=$database"
+    $connection = new-object system.data.SqlClient.SQLConnection($connectionString)
+    $command = new-object system.data.sqlclient.sqlcommand($sqlCommand, $connection)
+    $connection.Open()
+    $adapter = New-Object System.Data.sqlclient.sqlDataAdapter $command
+    $dataset = New-Object System.Data.DataSet
+    $adapter.Fill($dataSet) | Out-Null
+    $connection.Close()
+    $dataSet.Tables
+}
+
+function CreateStatusObject()
+{
+    param ($SamAccountName, $status)
+    
+    $obj = New-Object PSObject
+    $obj | Add-Member -type NoteProperty -Name SamAccountName -Value $SamAccountName
+    $obj | Add-Member -type NoteProperty -Name AccountStatus -Value $status
+
+    return $obj
+}
+
+$sqlcommand = "
+SELECT adusername  
+FROM [Mirth_Repository].[PCC].[UserChangeRequest] 
+where [Status] = 'RequiresApproval' and RequestAction = 'Disable' and CompletedDate is null"
+$dbitems = Invoke-SQL -dataSource "PSDB1xV" -database Mirth_Repository -sqlCommand $sqlcommand
+
+$userStatus = @()
+foreach($user in $dbitems)
+{
+    $status = Get-ADUser -Identity $user.adusername
+    #$user
+    #$status.Enabled
+    #$space5 = "     "
+    #$space5
+    $listItem = CreateStatusObject $user.adusername $status.Enabled
+    $userStatus += $listItem
+}
+
+$userStatus | export-csv -Path "C:\ps\Output\DisabledPCCusers.csv"	

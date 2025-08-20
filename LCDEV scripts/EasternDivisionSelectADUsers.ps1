@@ -1,0 +1,1 @@
+Get-ADUser -Filter {(Company -eq  "Eastern Division") -and ((title -like '*Social Services*') -or (title -like '*Care Manager*'))} | Get-ADUser -Property DisplayName, Company, title, PhysicalDeliveryOfficeName | Select surname, givenname, title, PhysicalDeliveryOfficeName | Export-csv "C:\Users\cjohnson\SocialServicesUsers.csv"
